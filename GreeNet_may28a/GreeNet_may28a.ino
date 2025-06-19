@@ -33,7 +33,8 @@ unsigned long lastSoilRead = 0;
 // Controle para envio ao backend
 unsigned long lastBackendMillis = 0;
 const long backendInterval = 60000; // 60 segundos
-EspMongo mongo(SECRET_BACKEND_URL);
+const char*  BACKEND_URL = "https://pi-iot-backend.vercel.app";
+EspMongo mongo(BACKEND_URL);
 
 // Protótipos de função
 bool testI2CDevice(byte address, const char* deviceName);
@@ -103,7 +104,7 @@ void setup() {
 
   // Mostra URL do backend
   Serial.print("Backend URL: ");
-  Serial.println(SECRET_BACKEND_URL);
+  Serial.println(BACKEND_URL);
 }
 
 void loop() {
