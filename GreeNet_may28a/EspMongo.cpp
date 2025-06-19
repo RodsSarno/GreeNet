@@ -49,14 +49,12 @@ bool EspMongo::sendJsonData() {
         return false;
     }
 
-    // Usa HTTPS com verificação de certificado desativada
     WiFiClientSecure client;
-    client.setFingerprint("E3:1E:98:A9:DD:8B:60:D7:46:D6:CC:B1:15:28:72:F4:76:3D:CE:C1");
-
+    client.setInsecure(); // Para HTTPS com certificado autoassinado (Vercel)
 
     HTTPClient http;
+    http.setTimeout(15000); // 15 segundos
     http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-    http.setTimeout(15000); // 15 segundos de timeout
 
     Serial.println("Iniciando requisição para: " + _url);
 
@@ -65,12 +63,18 @@ bool EspMongo::sendJsonData() {
         return false;
     }
 
+    // ⚠️ Agora que a conexão foi iniciada, podemos configurar os headers
+    http.useHTTP10(true); // Ajuda com servidores que não suportam chunked
     http.addHeader("Content-Type", "application/json");
+    http.addHeader("User-Agent", "ESP8266");
 
     String json = getDataJSON();
     Serial.println("Payload JSON: " + json);
 
     int httpCode = http.POST(json);
+
+    Serial.print("Código HTTP: ");
+    Serial.println(httpCode);
 
     if (httpCode >= 200 && httpCode < 300) {
         String response = http.getString();
@@ -78,14 +82,14 @@ bool EspMongo::sendJsonData() {
         http.end();
         return true;
     } else {
-        Serial.print("POST falhou, código de erro: ");
-        Serial.println(httpCode);
-
+        Serial.println("POST falhou");
         if (httpCode > 0) {
-            String response = http.getString();
-            Serial.println("Resposta do servidor: " + response);
+            Serial.print("Resposta do servidor: ");
+            Serial.println(http.getString());
+        } else {
+            Serial.print("Erro baixo nível: ");
+            Serial.println(http.errorToString(httpCode));
         }
-
         http.end();
         return false;
     }
