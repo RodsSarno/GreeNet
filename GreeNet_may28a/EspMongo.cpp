@@ -1,4 +1,5 @@
-#include <ESP8266WiFi.h> // Adicione esta linha
+#include <ESP8266WiFi.h>
+#include <WiFiClientSecure.h> // Necessário para HTTPS
 #include "EspMongo.h"
 
 EspMongo::EspMongo(const String& url) {
@@ -43,44 +44,48 @@ String EspMongo::getDataJSON() {
 }
 
 bool EspMongo::sendJsonData() {
-  if (WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi not connected");
-    return false;
-  }
-
-  WiFiClient client;
-  HTTPClient http;
-  
-  // Configura redirecionamentos
-  http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-  http.setTimeout(15000);  // Aumenta timeout para 15s
-
-  if (!http.begin(client, _url)) {
-    Serial.println("Connection failed");
-    return false;
-  }
-  
-  http.addHeader("Content-Type", "application/json");
-  
-  String json = getDataJSON();
-  int httpCode = http.POST(json);
-
-  // Trata códigos de sucesso (2xx)
-  if (httpCode >= 200 && httpCode < 300) {
-    String response = http.getString();
-    Serial.println("Response: " + response);
-    http.end();
-    return true;
-  } else {
-    Serial.print("POST failed, error: ");
-    Serial.println(httpCode);
-    
-    // Mostra detalhes do erro
-    if (httpCode > 0) {
-      String response = http.getString();
-      Serial.println("Response: " + response);
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi not connected");
+        return false;
     }
-    http.end();
-    return false;
-  }
+
+    // Usa HTTPS com verificação de certificado desativada
+    WiFiClientSecure client;
+    client.setInsecure();  // Não recomendado para produção
+
+    HTTPClient http;
+    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+    http.setTimeout(15000); // 15 segundos de timeout
+
+    Serial.println("Iniciando requisição para: " + _url);
+
+    if (!http.begin(client, _url)) {
+        Serial.println("Connection failed: begin() retornou false");
+        return false;
+    }
+
+    http.addHeader("Content-Type", "application/json");
+
+    String json = getDataJSON();
+    Serial.println("Payload JSON: " + json);
+
+    int httpCode = http.POST(json);
+
+    if (httpCode >= 200 && httpCode < 300) {
+        String response = http.getString();
+        Serial.println("Resposta: " + response);
+        http.end();
+        return true;
+    } else {
+        Serial.print("POST falhou, código de erro: ");
+        Serial.println(httpCode);
+
+        if (httpCode > 0) {
+            String response = http.getString();
+            Serial.println("Resposta do servidor: " + response);
+        }
+
+        http.end();
+        return false;
+    }
 }
