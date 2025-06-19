@@ -33,7 +33,6 @@ unsigned long lastSoilRead = 0;
 // Controle para envio ao backend
 unsigned long lastBackendMillis = 0;
 const long backendInterval = 60000; // 60 segundos
-const char*  BACKEND_URL = "https://pi-iot-backend.vercel.app/api/measure";
 EspMongo mongo(BACKEND_URL);
 
 // Protótipos de função
