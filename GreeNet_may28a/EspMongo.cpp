@@ -51,7 +51,8 @@ bool EspMongo::sendJsonData() {
 
     // Usa HTTPS com verificação de certificado desativada
     WiFiClientSecure client;
-    client.setInsecure();  // Não recomendado para produção
+    client.setFingerprint("E3:1E:98:A9:DD:8B:60:D7:46:D6:CC:B1:15:28:72:F4:76:3D:CE:C1");
+
 
     HTTPClient http;
     http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
