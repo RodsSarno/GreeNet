@@ -1,0 +1,9 @@
+=== Step 4: Configurar Blynk
+1. Crie uma conta no Blynk (blynk.io)
+2. Crie um novo projeto e obtenha o token de autenticação
+3. Adicione widgets no dashboard:
+   - V0: Temperatura (valor)
+   - V1: Umidade (valor)
+   - V2: Qualidade do ar (valor)
+   - V3: Umidade do solo (valor/medidor)
+   - V4: Luminosidade (valor)
